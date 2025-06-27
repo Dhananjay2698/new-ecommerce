@@ -32,11 +32,6 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    // Delete customer by ID
-    public void deleteCustomer(Long id) {
-        customerRepository.deleteById(id);
-    }
-
     // Update customer details
     public Optional<Customer> updateCustomer(Long id, Customer updatedCustomer) {
         return customerRepository.findById(id).map(customer -> {

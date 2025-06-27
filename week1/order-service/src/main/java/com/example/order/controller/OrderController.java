@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/")
 @CrossOrigin(origins = "*")
 public class OrderController {
     
@@ -63,45 +63,31 @@ public class OrderController {
         return ResponseEntity.notFound().build();
     }
     
-    // Get orders by customer ID
-    @GetMapping("/orders/customer/{customerId}")
-    public ResponseEntity<List<Order>> getOrdersByCustomerId(@PathVariable Long customerId) {
-        List<Order> orders = orderService.getOrdersByCustomerId(customerId);
-        return ResponseEntity.ok(orders);
-    }
-    
-    // Get orders by status
-    @GetMapping("/orders/status/{status}")
-    public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable String status) {
-        List<Order> orders = orderService.getOrdersByStatus(status);
-        return ResponseEntity.ok(orders);
-    }
-    
     // ========== ORDER ITEM ENDPOINTS ==========
     
     // Get all order items
-    @GetMapping("/order-items")
+    @GetMapping("/orders-items")
     public ResponseEntity<List<OrderItem>> getAllOrderItems() {
         List<OrderItem> orderItems = orderService.getAllOrderItems();
         return ResponseEntity.ok(orderItems);
     }
     
     // Get order items by order ID
-    @GetMapping("/order-items/order/{orderId}")
-    public ResponseEntity<List<OrderItem>> getOrderItemsByOrderId(@PathVariable Long orderId) {
-        List<OrderItem> orderItems = orderService.getOrderItemsByOrderId(orderId);
+    @GetMapping("/orders-items/orders/{id}")
+    public ResponseEntity<List<OrderItem>> getOrderItemsByOrderId(@PathVariable("id") Long id) {
+        List<OrderItem> orderItems = orderService.getOrderItemsByOrderId(id);
         return ResponseEntity.ok(orderItems);
     }
     
     // Create order item
-    @PostMapping("/order-items")
+    @PostMapping("/orders-items")
     public ResponseEntity<OrderItem> createOrderItem(@RequestBody OrderItem orderItem) {
         OrderItem createdOrderItem = orderService.createOrderItem(orderItem);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrderItem);
     }
     
     // Update order item
-    @PutMapping("/order-items/{id}")
+    @PutMapping("/orders-items/{id}")
     public ResponseEntity<OrderItem> updateOrderItem(@PathVariable Long id, @RequestBody OrderItem orderItemDetails) {
         OrderItem updatedOrderItem = orderService.updateOrderItem(id, orderItemDetails);
         if (updatedOrderItem != null) {
@@ -111,7 +97,7 @@ public class OrderController {
     }
     
     // Delete order item
-    @DeleteMapping("/order-items/{id}")
+    @DeleteMapping("/orders-items/{id}")
     public ResponseEntity<Void> deleteOrderItem(@PathVariable Long id) {
         boolean deleted = orderService.deleteOrderItem(id);
         if (deleted) {
