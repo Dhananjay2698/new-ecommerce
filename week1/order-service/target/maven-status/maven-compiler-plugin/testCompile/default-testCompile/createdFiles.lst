@@ -1,0 +1,4 @@
+com\example\order\service\OrderServiceTest.class
+com\example\order\entity\OrderTest.class
+com\example\order\controller\OrderControllerTest.class
+com\example\order\entity\OrderItemTest.class
