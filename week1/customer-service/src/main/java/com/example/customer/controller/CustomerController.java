@@ -58,4 +58,24 @@ public class CustomerController {
         return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    // Delete customer
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable("id") Long id) {
+        try {
+            System.out.println("Attempting to delete customer with ID: " + id);
+            boolean deleted = customerService.deleteCustomer(id);
+            if (deleted) {
+                System.out.println("Customer deleted successfully with ID: " + id);
+                return ResponseEntity.noContent().build();
+            } else {
+                System.out.println("Customer not found with ID: " + id);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting customer with ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 } 

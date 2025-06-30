@@ -1,3 +1,4 @@
-com\example\product\controller\ProductControllerTest.class
 com\example\product\entity\ProductTest.class
 com\example\product\service\ProductServiceTest.class
+com\example\product\config\NoSecurityConfig.class
+com\example\product\controller\ProductControllerTest.class

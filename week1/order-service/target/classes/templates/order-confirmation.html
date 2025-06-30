@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .order-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .status {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #007bff;
+            color: white;
+        }
+        .items-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+        .thank-you {
+            text-align: center;
+            font-size: 18px;
+            color: #007bff;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Order Confirmation</h1>
+            <p>Thank you for your order!</p>
+        </div>
+        
+        <div class="order-details">
+            <p><strong>Order Number:</strong> <span class="order-number" th:text="#{orderNumber}">#12345</span></p>
+            <p><strong>Order Date:</strong> <span th:text="${#temporals.format(orderDate, 'dd MMM yyyy HH:mm')}">01 Jan 2024 10:30</span></p>
+            <p><strong>Status:</strong> <span class="status" th:text="${orderStatus}">PENDING</span></p>
+        </div>
+        
+        <div class="thank-you">
+            <p>Your order has been successfully placed and is being processed.</p>
+        </div>
+        
+        <h3>Order Items:</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${orderItems}">
+                    <td th:text="${item.productId}">1</td>
+                    <td th:text="${item.quantity}">2</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>If you have any questions about your order, please contact our customer support.</p>
+            <p>Thank you for choosing our e-commerce platform!</p>
+            <p><small>This is an automated email. Please do not reply to this message.</small></p>
+        </div>
+    </div>
+</body>
+</html> 

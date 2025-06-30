@@ -1,4 +1,6 @@
 D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\entity\OrderTest.java
 D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\controller\OrderControllerTest.java
+D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\service\EmailServiceTest.java
 D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\service\OrderServiceTest.java
+D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\config\NoSecurityConfig.java
 D:\java_project_stepwise\week1\week1\order-service\src\test\java\com\example\order\entity\OrderItemTest.java

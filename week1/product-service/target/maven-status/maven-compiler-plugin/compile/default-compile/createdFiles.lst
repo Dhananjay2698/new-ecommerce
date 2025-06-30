@@ -1,5 +1,9 @@
 com\example\product\ProductServiceApplication.class
 com\example\product\repository\ProductRepository.class
+com\example\product\aspect\LoggingAspect.class
 com\example\product\service\ProductService.class
+com\example\product\config\SecurityConfig.class
 com\example\product\entity\Product.class
+com\example\product\service\JwtService.class
+com\example\product\filter\JwtAuthenticationFilter.class
 com\example\product\controller\ProductController.class

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.order.service.OrderServiceTest
 -------------------------------------------------------------------------------
-Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.343 s -- in com.example.order.service.OrderServiceTest
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.467 s -- in com.example.order.service.OrderServiceTest

@@ -1,5 +1,9 @@
 D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\repository\CustomerRepository.java
+D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\service\JwtService.java
+D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\filter\JwtAuthenticationFilter.java
+D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\config\SecurityConfig.java
 D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\CustomerServiceApplication.java
 D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\entity\Customer.java
 D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\controller\CustomerController.java
 D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\service\CustomerService.java
+D:\java_project_stepwise\week1\week1\customer-service\src\main\java\com\example\customer\aspect\LoggingAspect.java

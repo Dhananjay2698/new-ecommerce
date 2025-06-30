@@ -40,4 +40,26 @@ public class CustomerService {
             return customerRepository.save(customer);
         });
     }
+
+    // Delete customer
+    public boolean deleteCustomer(Long id) {
+        try {
+            System.out.println("Service: Attempting to delete customer with ID: " + id);
+            Optional<Customer> optionalCustomer = customerRepository.findById(id);
+            if (optionalCustomer.isPresent()) {
+                Customer customer = optionalCustomer.get();
+                System.out.println("Service: Found customer: " + customer.getName() + ", proceeding with deletion");
+                customerRepository.deleteById(id);
+                System.out.println("Service: Customer deleted successfully from repository");
+                return true;
+            } else {
+                System.out.println("Service: Customer not found with ID: " + id);
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("Service: Error deleting customer with ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to let controller handle it
+        }
+    }
 } 

@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -29,6 +32,12 @@ class OrderServiceTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private EmailService emailService;
+
+    @Mock
+    private ProductServiceClient productServiceClient;
 
     @InjectMocks
     private OrderService orderService;
@@ -44,12 +53,12 @@ class OrderServiceTest {
         testOrder.setId(1L);
         testOrder.setCustomerId(123L);
         testOrder.setStatus("PENDING");
-        testOrder.setOrderedDate(LocalDateTime.now());
+        testOrder.setOrderedDate(LocalDateTime.of(2024, 6, 15, 10, 30));
 
         updatedOrder = new Order();
         updatedOrder.setCustomerId(456L);
         updatedOrder.setStatus("CONFIRMED");
-        updatedOrder.setOrderedDate(LocalDateTime.now().minusDays(1));
+        updatedOrder.setOrderedDate(LocalDateTime.of(2024, 7, 20, 14, 45));
 
         testOrderItem = new OrderItem();
         testOrderItem.setId(1L);
@@ -117,6 +126,8 @@ class OrderServiceTest {
         orderToCreate.setStatus("PENDING");
 
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        when(orderItemRepository.findByOrderId(any())).thenReturn(Arrays.asList(testOrderItem));
+        doNothing().when(emailService).sendOrderConfirmationEmail(any(Order.class), anyList(), anyString());
 
         // Act
         Order createdOrder = orderService.createOrder(orderToCreate);
@@ -394,5 +405,148 @@ class OrderServiceTest {
         assertEquals(updatedOrderItem.getProductId(), result.getProductId());
         assertEquals(updatedOrderItem.getQuantity(), result.getQuantity());
         assertEquals(orderItemId, result.getId());
+    }
+
+    @Test
+    void testUpdateOrderStatus_WhenOrderExists() {
+        // Arrange
+        Long orderId = 1L;
+        String newStatus = "COMPLETED";
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        doNothing().when(emailService).sendOrderStatusUpdateEmail(any(Order.class), anyString(), anyString());
+
+        // Act
+        Optional<Order> result = orderService.updateOrderStatus(orderId, newStatus);
+
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(testOrder, result.get());
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    void testUpdateOrderStatus_WhenOrderDoesNotExist() {
+        // Arrange
+        Long orderId = 999L;
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Order> result = orderService.updateOrderStatus(orderId, "COMPLETED");
+
+        // Assert
+        assertFalse(result.isPresent());
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    // ========== BUSINESS LOGIC TESTS ==========
+
+    @Test
+    void testGetOrderTotalAmount_WhenOrderExists() {
+        // Arrange
+        Long orderId = 1L;
+        List<OrderItem> orderItems = Arrays.asList(testOrderItem);
+        when(orderItemRepository.findByOrderId(orderId)).thenReturn(orderItems);
+        when(productServiceClient.getProductPrice(testOrderItem.getProductId())).thenReturn(new BigDecimal("25.50"));
+
+        // Act
+        BigDecimal totalAmount = orderService.getOrderTotalAmount(orderId);
+
+        // Assert
+        assertNotNull(totalAmount);
+        assertEquals(new BigDecimal("127.50"), totalAmount); // 25.50 * 5 (quantity from setUp)
+        verify(orderItemRepository, times(1)).findByOrderId(orderId);
+        verify(productServiceClient, times(1)).getProductPrice(testOrderItem.getProductId());
+    }
+
+    @Test
+    void testGetOrderTotalAmount_WhenOrderDoesNotExist() {
+        // Arrange
+        Long orderId = 999L;
+        when(orderItemRepository.findByOrderId(orderId)).thenReturn(Arrays.asList());
+
+        // Act
+        BigDecimal totalAmount = orderService.getOrderTotalAmount(orderId);
+
+        // Assert
+        assertNull(totalAmount);
+        verify(orderItemRepository, times(1)).findByOrderId(orderId);
+        verify(productServiceClient, never()).getProductPrice(any());
+    }
+
+    @Test
+    void testGetOrderCountByCustomer() {
+        // Arrange
+        Long customerId = 123L;
+        when(orderRepository.countByCustomerId(customerId)).thenReturn(5L);
+
+        // Act
+        Long count = orderService.getOrderCountByCustomer(customerId);
+
+        // Assert
+        assertEquals(5L, count);
+        verify(orderRepository, times(1)).countByCustomerId(customerId);
+    }
+
+    @Test
+    void testGetDistinctOrderCountByProduct() {
+        // Arrange
+        Long productId = 456L;
+        OrderItem item1 = new OrderItem();
+        item1.setOrderId(1L);
+        item1.setProductId(productId);
+        item1.setQuantity(2);
+
+        OrderItem item2 = new OrderItem();
+        item2.setOrderId(2L);
+        item2.setProductId(productId);
+        item2.setQuantity(1);
+
+        OrderItem item3 = new OrderItem();
+        item3.setOrderId(1L); // Same order as item1
+        item3.setProductId(productId);
+        item3.setQuantity(3);
+
+        List<OrderItem> orderItems = Arrays.asList(item1, item2, item3);
+        when(orderItemRepository.findByProductId(productId)).thenReturn(orderItems);
+
+        // Act
+        Long count = orderService.getDistinctOrderCountByProduct(productId);
+
+        // Assert
+        assertEquals(2L, count); // Should count distinct order IDs: 1, 2
+        verify(orderItemRepository, times(1)).findByProductId(productId);
+    }
+
+    @Test
+    void testGetCustomerPurchaseCount_AllTime() {
+        // Arrange
+        Long customerId = 123L;
+        List<Order> customerOrders = Arrays.asList(testOrder, updatedOrder);
+        when(orderRepository.findByCustomerId(customerId)).thenReturn(customerOrders);
+
+        // Act
+        Long count = orderService.getCustomerPurchaseCount(customerId, null, null);
+
+        // Assert
+        assertEquals(2L, count);
+        verify(orderRepository, times(1)).findByCustomerId(customerId);
+    }
+
+    @Test
+    void testGetCustomerPurchaseCount_WithDateRange() {
+        // Arrange
+        Long customerId = 123L;
+        List<Order> customerOrders = Arrays.asList(testOrder, updatedOrder);
+        when(orderRepository.findByCustomerId(customerId)).thenReturn(customerOrders);
+
+        // Act
+        Long count = orderService.getCustomerPurchaseCount(customerId, "2024-01-01", "2024-12-31");
+
+        // Assert
+        assertEquals(2L, count); // Both orders should be within the date range
+        verify(orderRepository, times(1)).findByCustomerId(customerId);
     }
 } 

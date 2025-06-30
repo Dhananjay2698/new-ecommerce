@@ -1,3 +1,4 @@
 com\example\customer\service\CustomerServiceTest.class
 com\example\customer\controller\CustomerControllerTest.class
 com\example\customer\entity\CustomerTest.class
+com\example\customer\config\NoSecurityConfig.class

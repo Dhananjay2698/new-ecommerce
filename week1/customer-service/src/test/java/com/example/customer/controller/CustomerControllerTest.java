@@ -2,14 +2,20 @@ package com.example.customer.controller;
 
 import com.example.customer.entity.Customer;
 import com.example.customer.service.CustomerService;
+import com.example.customer.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.customer.config.NoSecurityConfig;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -22,7 +28,13 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CustomerController.class)
+@Import(NoSecurityConfig.class)
+@WebMvcTest(
+    value = CustomerController.class,
+    excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfiguration.class)
+    }
+)
 class CustomerControllerTest {
 
     @Autowired
@@ -30,6 +42,9 @@ class CustomerControllerTest {
 
     @MockBean
     private CustomerService customerService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -134,6 +149,8 @@ class CustomerControllerTest {
         Customer invalidCustomer = new Customer();
         // Missing required fields
 
+        when(customerService.saveCustomer(any(Customer.class))).thenReturn(testCustomer);
+
         // Act & Assert
         mockMvc.perform(post("/customers")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -192,5 +209,36 @@ class CustomerControllerTest {
                 .andExpect(status().isOk()); // Controller doesn't validate, so it returns 200
 
         verify(customerService, times(1)).updateCustomer(eq(1L), any(Customer.class));
+    }
+
+    @Test
+    void testDeleteCustomer_WhenCustomerExists() throws Exception {
+        // Arrange
+        when(customerService.deleteCustomer(1L)).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(delete("/customers/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDeleteCustomer_WhenCustomerDoesNotExist() throws Exception {
+        // Arrange
+        when(customerService.deleteCustomer(999L)).thenReturn(false);
+
+        // Act & Assert
+        mockMvc.perform(delete("/customers/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDeleteCustomer_WhenExceptionOccurs() throws Exception {
+        // Arrange
+        when(customerService.deleteCustomer(1L))
+            .thenThrow(new RuntimeException("Database error"));
+
+        // Act & Assert
+        mockMvc.perform(delete("/customers/1"))
+                .andExpect(status().isInternalServerError());
     }
 } 
